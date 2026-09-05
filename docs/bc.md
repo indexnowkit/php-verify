@@ -9,7 +9,7 @@
 | **Value objects** — `final readonly`, properties only appended with defaults | `PageSignals`, `VerifyConfig` |
 | **Constants** — referenced, not hard-coded; values may change in a minor | `VerifyConfig::OPTIONS`, `DEFAULT_*`, `MAX_DELAY`, `PageSignals::MAX_BYTES`, `SOURCE_*`, `SampleCheck::CODE` |
 | **Enum** — closed sets | `RedirectPolicy`, `NonCanonicalPolicy`, `OriginErrorPolicy` |
-| **Texts that are a contract** | the log-line prefixes of [operations.md](operations.md) (operators grep them); the `Reason` cases of the skipped results (`Noindex`, `RobotsDisallowed`, `NonCanonical`, `Redirected`, `OriginError`) and the check codes `verify.installed`, `verify.config`, `verify.dispatch`, `verify.sample` |
+| **Texts that are a contract** | the log-line prefixes of [operations.md](operations.md) (operators grep them); the `Reason` cases of the skipped results (`Noindex`, `RobotsDisallowed`, `NonCanonical`, `Redirected`, `OriginError`) and the check codes `verify.installed`, `verify.dispatch`, `verify.sample` |
 
 Not covered: `Verdict` (`@internal`), the `error` sentences of the results and the exception messages, anything under
 `tests/`.

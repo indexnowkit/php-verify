@@ -36,8 +36,9 @@ skipped, reason: …`.
 ## Checks
 
 `indexnow:check` prints, with the package: `verify: installed, disabled (verify.enabled: false)` (ok, `verify.installed`)
-or `verify: enabled (redirect: skip, non_canonical: skip, origin_error: skip)`; `verify.config` (error) for an invalid
-block; `verify.dispatch` (warning) for `verify.enabled` with `dispatch: sync`; one `verify.sample` line per `--sample`
+or `verify: enabled (redirect: skip, non_canonical: skip, origin_error: skip)` (an invalid block is not a check line:
+`VerifyConfig::loadOrDisabled()` logs it at `critical` and the pre-flight is off, the bundle rejects it at compile
+time); `verify.dispatch` (warning) for `verify.enabled` with `dispatch: sync`; one `verify.sample` line per `--sample`
 / `--sample-class` (ok or warning, never error), or `verify sample: no sample given (check --sample=<url>)` (ok).
 Without the package: `verify: not installed (composer require indexnowkit/verify) — pre-flight checks off` (ok), and
 `--sample` is an error with the install line.
