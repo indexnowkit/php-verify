@@ -57,6 +57,8 @@ final class VerifyConfigTest extends TestCase
         self::assertSame(10, $config->maxBatch);
         self::assertSame(0, $config->robotsCacheTtl);
         self::assertSame('my-bot/1', $config->userAgent());
+        self::assertSame(['enabled' => true, 'redirect' => 'follow', 'non_canonical' => 'replace', 'origin_error' => 'send', 'delay' => 5, 'timeout' => 2.5, 'max_redirects' => 1, 'max_batch' => 10, 'robots_cache_ttl' => 0, 'user_agent' => 'my-bot/1'], $config->toArray());
+        self::assertSame(array_keys(VerifyConfig::fromArray([])->toArray()), array_map(static fn(string $o): string => substr($o, 7), VerifyConfig::OPTIONS), 'toArray() and OPTIONS name the same keys');
     }
 
     /**

@@ -130,6 +130,27 @@ final readonly class VerifyConfig
         }
     }
 
+    /**
+     * The effective block in the form of {@see fromArray()} (`indexnow:config` prints it as the `verify` section).
+     *
+     * @return array<string, mixed>
+     */
+    public function toArray(): array
+    {
+        return [
+            'enabled' => $this->enabled,
+            'redirect' => $this->redirect->value,
+            'non_canonical' => $this->nonCanonical->value,
+            'origin_error' => $this->originError->value,
+            'delay' => $this->delay,
+            'timeout' => $this->timeout,
+            'max_redirects' => $this->maxRedirects,
+            'max_batch' => $this->maxBatch,
+            'robots_cache_ttl' => $this->robotsCacheTtl,
+            'user_agent' => $this->userAgent,
+        ];
+    }
+
     /** `verify.user_agent`, or `indexnowkit-verify/<version> (+https://github.com/indexnowkit/php)`. */
     public function userAgent(): string
     {

@@ -5,7 +5,7 @@
 
 | Tier | Members |
 |---|---|
-| **Call** — signatures only grow by appended, defaulted parameters; pass anything past the first argument by name | `VerifyingSubmitter` (constructor, `submit()`, `prepare()`, `addListener()`), `VerifyConfig` (constructor, `fromArray()`, `disabled()`, `loadOrDisabled()`, `transportConfig()`, `userAgent()`, `defaultUserAgent()`), `PageSignals::fromResponse()`, `UrlReference::resolve()`, `RobotsCache` (constructor, `disallows()`, `key()`), `Check\SampleCheck` |
+| **Call** — signatures only grow by appended, defaulted parameters; pass anything past the first argument by name | `VerifyingSubmitter` (constructor, `submit()`, `prepare()`, `addListener()`), `VerifyConfig` (constructor, `fromArray()`, `disabled()`, `loadOrDisabled()`, `toArray()`, `transportConfig()`, `userAgent()`, `defaultUserAgent()`), `PageSignals::fromResponse()`, `UrlReference::resolve()`, `RobotsCache` (constructor, `disallows()`, `key()`), `Check\SampleCheck` |
 | **Value objects** — `final readonly`, properties only appended with defaults | `PageSignals`, `VerifyConfig` |
 | **Constants** — referenced, not hard-coded; values may change in a minor | `VerifyConfig::OPTIONS`, `DEFAULT_*`, `MAX_DELAY`, `PageSignals::MAX_BYTES`, `SOURCE_*`, `SampleCheck::CODE` |
 | **Enum** — closed sets | `RedirectPolicy`, `NonCanonicalPolicy`, `OriginErrorPolicy` |
