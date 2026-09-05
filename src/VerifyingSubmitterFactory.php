@@ -40,6 +40,12 @@ final class VerifyingSubmitterFactory implements SubmitterFactoryInterface
         private readonly ?ClockInterface $clock = null,
     ) {}
 
+    /** The decorated factory (an adapter binds it apart for the unverified sitemap run). */
+    public function inner(): SubmitterFactoryInterface
+    {
+        return $this->inner;
+    }
+
     public function create(bool $force, bool $dryRun): SubmitterInterface
     {
         return new VerifyingSubmitter($this->inner->create($force, $dryRun), $this->transport, $this->config, $this->keys, $this->normalizer, $this->logger, $this->events, $this->store, $this->robots, $this->clock);
