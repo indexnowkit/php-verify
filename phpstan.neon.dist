@@ -1,0 +1,9 @@
+# Level 9 with phpstan-strict-rules; the monorepo CI runs this same file per package.
+includes:
+    - vendor/phpstan/phpstan-phpunit/extension.neon
+    - vendor/phpstan/phpstan-strict-rules/rules.neon
+parameters:
+    level: 9
+    paths:
+        - src
+    treatPhpDocTypesAsCertain: false

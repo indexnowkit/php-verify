@@ -1,0 +1,36 @@
+# CI of the read-only split repository indexnowkit/php-verify. Development happens in the monorepo
+# https://github.com/indexnowkit/php, whose CI runs the same ci:install:* scripts of composer.json against the
+# working copy of the sibling packages. Between releases the indexnowkit/* constraints resolve to the
+# siblings' main branches, hence minimum-stability dev (with prefer-stable) in composer.json.
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  tests:
+    name: PHP ${{ matrix.php }} / ${{ matrix.deps }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        php: ['8.2', '8.3', '8.4', '8.5']
+        deps: [highest]
+        include:
+          - { php: '8.2', deps: lowest }
+    steps:
+      - uses: actions/checkout@v4
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ matrix.php }}
+          extensions: mbstring
+          coverage: none
+      - name: Install (${{ matrix.deps }})
+        run: composer run ci:install:${{ matrix.deps }}
+      - run: vendor/bin/phpunit
+      - run: vendor/bin/phpstan analyse --memory-limit=1G

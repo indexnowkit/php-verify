@@ -1,0 +1,9 @@
+# Keep the Packagist dist archive small: no tests, CI or tooling configuration.
+/.gitattributes        export-ignore
+/.github               export-ignore
+/phpunit.xml.dist      export-ignore
+/tests                 export-ignore
+/CONTRIBUTING.md       export-ignore
+
+* text=auto eol=lf
+/phpstan.neon.dist     export-ignore

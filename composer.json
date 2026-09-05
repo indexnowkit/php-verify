@@ -1,0 +1,75 @@
+{
+    "name": "indexnowkit/verify",
+    "description": "Pre-flight check for indexnowkit: a GET of every URL before it is submitted to IndexNow — noindex, robots.txt, canonical, redirects and origin errors are skipped; check --sample",
+    "type": "library",
+    "license": "MIT",
+    "minimum-stability": "dev",
+    "prefer-stable": true,
+    "keywords": [
+        "indexnow",
+        "seo",
+        "noindex",
+        "robots",
+        "canonical",
+        "yandex",
+        "bing",
+        "indexing"
+    ],
+    "homepage": "https://indexnowkit.github.io/php/verify/",
+    "authors": [
+        {
+            "name": "Igor Pinchuk",
+            "email": "i.pinchuk.work@gmail.com"
+        }
+    ],
+    "support": {
+        "issues": "https://github.com/indexnowkit/php/issues",
+        "source": "https://github.com/indexnowkit/php-verify",
+        "docs": "https://github.com/indexnowkit/php-verify/blob/main/README.md",
+        "security": "https://github.com/indexnowkit/php-verify/blob/main/SECURITY.md"
+    },
+    "require": {
+        "php": "^8.2",
+        "indexnowkit/core": "^0.9",
+        "psr/log": "^2.0 || ^3.0",
+        "psr/simple-cache": "^1.0 || ^2.0 || ^3.0"
+    },
+    "require-dev": {
+        "indexnowkit/testing": "^0.2",
+        "phpstan/phpstan": "^2.2.13",
+        "phpstan/phpstan-phpunit": "^2.0.18",
+        "phpstan/phpstan-strict-rules": "^2.0.12",
+        "phpunit/phpunit": "^11.5",
+        "roave/security-advisories": "dev-latest"
+    },
+    "suggest": {
+        "indexnowkit/console": "The --sample / --sample-class options of the check command of every adapter (^0.3)"
+    },
+    "autoload": {
+        "psr-4": {
+            "IndexNowKit\\Verify\\": "src/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "IndexNowKit\\Verify\\Tests\\": "tests/"
+        }
+    },
+    "scripts": {
+        "test": "phpunit",
+        "stan": "phpstan analyse --memory-limit=1G",
+        "ci:install:highest": "@composer update --no-interaction --prefer-dist",
+        "ci:install:lowest": "@composer update --no-interaction --prefer-dist --prefer-lowest --prefer-stable"
+    },
+    "config": {
+        "sort-packages": true,
+        "allow-plugins": {
+            "php-http/discovery": false
+        }
+    },
+    "extra": {
+        "branch-alias": {
+            "dev-main": "0.1.x-dev"
+        }
+    }
+}
