@@ -126,7 +126,7 @@ the skipped results reach them too. The log lines are fixed strings operators ca
 
 ## Requirements
 
-PHP 8.2+, `indexnowkit/core ^0.9`; `indexnowkit/console ^0.3` for the `--sample` options of the `check` command (every
+PHP 8.2+, `indexnowkit/core ^0.10`; `indexnowkit/console ^0.3` for the `--sample` options of the `check` command (every
 adapter has it).
 
 ## Notes for AI assistants

@@ -123,7 +123,7 @@ $results = $submitter->submit(['https://www.example.com/blog/post-1']);
 
 ## Требования
 
-PHP 8.2+, `indexnowkit/core ^0.9`; `indexnowkit/console ^0.3` для опций `--sample` команды `check` (есть у каждого
+PHP 8.2+, `indexnowkit/core ^0.10`; `indexnowkit/console ^0.3` для опций `--sample` команды `check` (есть у каждого
 адаптера).
 
 ## Заметки для AI-ассистентов

@@ -14,5 +14,5 @@
 Not covered: `Verdict` (`@internal`), the `error` sentences of the results and the exception messages, anything under
 `tests/`.
 
-The package pins `indexnowkit/core ^0.9`: the `Reason` cases it uses and `Retry\ForbiddenCounter`'s sibling
+The package pins `indexnowkit/core ^0.10`: the `Reason` cases it uses and `Retry\ForbiddenCounter`'s sibling
 `Http\TransportFactory::lazy(..., $extraHeaders)` appeared there.
