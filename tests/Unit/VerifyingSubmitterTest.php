@@ -10,6 +10,7 @@ use IndexNowKit\Result;
 use IndexNowKit\ResultStatus;
 use IndexNowKit\Testing\ArrayLogger;
 use IndexNowKit\Testing\FakeTransport;
+use IndexNowKit\Testing\FrozenClock;
 use IndexNowKit\Verify\Tests\Support\ArrayCache;
 use IndexNowKit\Verify\Tests\Support\Factory;
 use IndexNowKit\Verify\Tests\Support\RecordingEvents;
@@ -273,6 +274,26 @@ final class VerifyingSubmitterTest extends TestCase
         self::assertCount(3, self::posted($transport));
         self::assertCount(1, $results);
         self::assertSame(['indexnow verify: batch of 3 URLs exceeds verify.max_batch (2), sent unverified; use sitemap --no-verify or raise the limit'], $logger->messages('warning'));
+    }
+
+    #[TestDox('verify.time_budget: once the budget is spent the remaining URLs are sent unverified with one warning')]
+    public function testTimeBudget(): void
+    {
+        $transport = Factory::transport();
+        $clock = new FrozenClock();
+        $transport->beforeGet = static function (string $url) use ($clock): void {
+            if (!str_ends_with($url, '/robots.txt')) {
+                $clock->advance(40); // every page GET takes 40 s
+            }
+        };
+        $logger = new ArrayLogger();
+        [$submitter] = Factory::submitters($transport, ['time_budget' => 60], logger: $logger, clock: $clock);
+
+        $submitter->submit([self::A, self::B, 'https://www.example.com/c']);
+
+        self::assertCount(2, array_filter($transport->gets, static fn(string $u): bool => !str_ends_with($u, '/robots.txt')), 'A and B are fetched (80 s), C is past the budget');
+        self::assertCount(3, self::posted($transport), 'every URL is submitted');
+        self::assertSame(['indexnow verify: verify.time_budget of 60 s spent after 2 of 3 URLs; the remaining 1 sent unverified'], $logger->messages('warning'));
     }
 
     #[TestDox('enabled: false is a transparent delegate: zero GETs, the listeners still see every result')]

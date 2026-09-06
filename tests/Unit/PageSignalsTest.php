@@ -64,6 +64,8 @@ final class PageSignalsTest extends TestCase
         yield 'bingbot prefix' => ['bingbot: noindex', true];
         yield 'yandex prefix' => ['Yandex: none', true];
         yield 'googlebot then everybody' => ['googlebot: nofollow, otherbot: nothing', false];
+        yield 'a googlebot directive does not swallow the global one after it' => ['googlebot: noindex, noindex', true];
+        yield 'two headers joined by the header line' => ['googlebot: nofollow, none', true];
         yield 'mixed case' => ['NoIndex', true];
     }
 

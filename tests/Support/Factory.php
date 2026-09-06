@@ -17,6 +17,7 @@ use IndexNowKit\Url\UrlNormalizerFactory;
 use IndexNowKit\Verify\RobotsCache;
 use IndexNowKit\Verify\VerifyConfig;
 use IndexNowKit\Verify\VerifyingSubmitter;
+use Psr\Clock\ClockInterface;
 use Psr\SimpleCache\CacheInterface;
 
 final class Factory
@@ -41,7 +42,7 @@ final class Factory
      *
      * @return array{0: VerifyingSubmitter, 1: Submitter}
      */
-    public static function submitters(FakeTransport $transport, array $verify = [], array $overrides = [], ?ArrayLogger $logger = null, ?RecordingEvents $events = null, ?RecordingStore $store = null, ?CacheInterface $robotsCache = null, bool $inWebRequest = false, ?Closure $sleep = null): array
+    public static function submitters(FakeTransport $transport, array $verify = [], array $overrides = [], ?ArrayLogger $logger = null, ?RecordingEvents $events = null, ?RecordingStore $store = null, ?CacheInterface $robotsCache = null, bool $inWebRequest = false, ?Closure $sleep = null, ?ClockInterface $clock = null): array
     {
         $logger ??= new ArrayLogger();
         $config = self::config($overrides);
@@ -51,7 +52,7 @@ final class Factory
         $inner = new Submitter(new Client($transport, $keys, $config, $logger, new NullThrottle(), $normalizer), $config, new MemoryDebounceStore(), $logger, $normalizer, $events, $store);
         $robots = new RobotsCache($transport, $robotsCache, $config->debounceKeyPrefix, $verifyConfig->robotsCacheTtl, $logger);
 
-        return [new VerifyingSubmitter($inner, $transport, $verifyConfig, $keys, $normalizer, $logger, $events, $store, $robots, null, $inWebRequest, $sleep), $inner];
+        return [new VerifyingSubmitter($inner, $transport, $verifyConfig, $keys, $normalizer, $logger, $events, $store, $robots, $clock, $inWebRequest, $sleep), $inner];
     }
 
     /** A transport whose robots.txt answers 404 (no robots.txt), the usual site. */

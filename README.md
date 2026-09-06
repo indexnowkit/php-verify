@@ -64,6 +64,9 @@ attribute order and case do not matter.
 (`verify.robots_cache_ttl`, an hour). A `robots.txt` that cannot be fetched (not `200`, not `404`) blocks nothing: one
 warning per host, every path is treated as allowed — an unreachable `robots.txt` is no reason to keep quiet.
 
+**Time.** One blocking GET per URL, sequentially, `verify.time_budget` (60 s) for the whole batch: past it the rest is sent
+unverified with one warning, so a queue job never outlives its visibility timeout and gets a second worker.
+
 **Batches.** A batch above `verify.max_batch` (100) URLs is sent unverified with one warning: that is the `sitemap`
 command, where the site itself lists its URLs (`indexnow:sitemap --no-verify` says so explicitly). `submit --dry-run`
 runs the pre-flight (a GET is harmless) so it shows what would be skipped.
@@ -126,7 +129,7 @@ the skipped results reach them too. The log lines are fixed strings operators ca
 
 ## Requirements
 
-PHP 8.2+, `indexnowkit/core ^0.10`; `indexnowkit/console ^0.3` for the `--sample` options of the `check` command (every
+PHP 8.2+, `indexnowkit/core ^0.11`; `indexnowkit/console ^0.4` for the `--sample` options of the `check` command (every
 adapter has it).
 
 ## Notes for AI assistants

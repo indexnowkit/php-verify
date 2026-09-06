@@ -92,8 +92,8 @@ final readonly class PageSignals
         if ($header === null) {
             return [false, null];
         }
-        $bot = null;
         foreach (explode(',', $header) as $token) {
+            $bot = null; // per token: `googlebot: noindex, noindex` addresses Google, then everybody
             $token = strtolower(trim($token));
             if (str_contains($token, ':') && !\in_array(strtolower(trim(explode(':', $token, 2)[0])), self::COLON_DIRECTIVES, true)) {
                 [$bot, $token] = array_map('trim', explode(':', $token, 2));

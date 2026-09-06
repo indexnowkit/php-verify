@@ -34,7 +34,8 @@ final class VerifyConfigTest extends TestCase
         self::assertNull($config->userAgent);
         self::assertMatchesRegularExpression('#^indexnowkit-verify/\d+\.\d+[\w.-]* \(\+https://github\.com/indexnowkit/php\)$#', $config->userAgent());
         self::assertFalse(VerifyConfig::disabled()->enabled);
-        self::assertCount(10, VerifyConfig::OPTIONS);
+        self::assertSame(60, $config->timeBudget);
+        self::assertCount(11, VerifyConfig::OPTIONS);
         foreach (VerifyConfig::OPTIONS as $option) {
             self::assertStringStartsWith('verify.', $option);
         }
@@ -44,7 +45,7 @@ final class VerifyConfigTest extends TestCase
     {
         $config = VerifyConfig::fromArray([
             'enabled' => '1', 'redirect' => 'FOLLOW', 'non_canonical' => 'replace', 'origin_error' => 'send', 'delay' => '5',
-            'timeout' => '2.5', 'max_redirects' => '1', 'max_batch' => '10', 'robots_cache_ttl' => '0', 'user_agent' => 'my-bot/1',
+            'timeout' => '2.5', 'max_redirects' => '1', 'max_batch' => '10', 'time_budget' => '15', 'robots_cache_ttl' => '0', 'user_agent' => 'my-bot/1',
         ]);
 
         self::assertTrue($config->enabled);
@@ -57,7 +58,7 @@ final class VerifyConfigTest extends TestCase
         self::assertSame(10, $config->maxBatch);
         self::assertSame(0, $config->robotsCacheTtl);
         self::assertSame('my-bot/1', $config->userAgent());
-        self::assertSame(['enabled' => true, 'redirect' => 'follow', 'non_canonical' => 'replace', 'origin_error' => 'send', 'delay' => 5, 'timeout' => 2.5, 'max_redirects' => 1, 'max_batch' => 10, 'robots_cache_ttl' => 0, 'user_agent' => 'my-bot/1'], $config->toArray());
+        self::assertSame(['enabled' => true, 'redirect' => 'follow', 'non_canonical' => 'replace', 'origin_error' => 'send', 'delay' => 5, 'timeout' => 2.5, 'max_redirects' => 1, 'max_batch' => 10, 'time_budget' => 15, 'robots_cache_ttl' => 0, 'user_agent' => 'my-bot/1'], $config->toArray());
         self::assertSame(array_keys(VerifyConfig::fromArray([])->toArray()), array_map(static fn(string $o): string => substr($o, 7), VerifyConfig::OPTIONS), 'toArray() and OPTIONS name the same keys');
     }
 

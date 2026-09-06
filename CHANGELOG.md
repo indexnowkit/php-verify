@@ -3,6 +3,26 @@
 Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Versioning: SemVer; until 1.0 minor versions may
 contain breaking changes, listed under "Changed". What the compatibility promise covers: [docs/bc.md](docs/bc.md).
 
+## [0.2.0] — Unreleased
+
+### Changed
+
+- **`X-Robots-Tag` parsing**: a bot prefix applies to its own directive only. `googlebot: noindex, noindex` (two headers
+  joined by the header line) hid the second, global `noindex`, and the page was submitted.
+- **`RobotsCache` keys by origin** (`robots.<scheme>_<host>_<port>` for anything but https on 443): staging on
+  `http://host:8080` and production on `https://host` no longer share one `robots.txt` for an hour.
+- The pre-flight transport reads at most 1 MiB of a page (`VerifyConfig::BODY_LIMIT`) instead of the 50 MiB of the core's
+  GET limit; the signals live in the first 256 KiB.
+- Requires `indexnowkit/core ^0.11`.
+
+### Added
+
+- **`verify.time_budget`** (60 s): the pre-flight of one batch stops when the budget is spent and the remaining URLs are
+  sent unverified with one warning, so a queue job never runs past its visibility timeout into a second worker.
+- **`Check\DispatchCheck`** (`verify.dispatch`, with the adapter's queue mode) and **`Check\TransportCheck`**
+  (`verify.transport`: an application `http.client` keeps its own settings, so `verify.redirect`, `verify.max_redirects`,
+  `verify.timeout` and the host check on redirect targets may not apply) — the adapters register both.
+
 ## [0.1.1] — 2026-09-06
 
 ### Changed

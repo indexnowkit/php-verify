@@ -22,9 +22,9 @@ final class RobotsCache
     /** The body stored for a host without robots.txt (404): every path allowed, nothing fetched again. */
     private const NONE = '';
 
-    /** @var array<string, string> host => robots.txt body of this process */
+    /** @var array<string, string> origin => robots.txt body of this process */
     private array $bodies = [];
-    /** @var array<string, true> hosts whose robots.txt failed in this process (warned once) */
+    /** @var array<string, true> origins whose robots.txt failed in this process (warned once) */
     private array $failed = [];
     private bool $cacheWarned = false;
 
@@ -53,7 +53,9 @@ final class RobotsCache
         }
         $host = strtolower($parts['host']);
         $scheme = strtolower($parts['scheme'] ?? 'https');
-        $robots = $this->body($host, $scheme . '://' . $host . (isset($parts['port']) ? ':' . $parts['port'] : ''));
+        $port = $parts['port'] ?? null;
+        // Staging on http://host:8080 and production on https://host are different origins with different robots.txt files.
+        $robots = $this->body($host, $scheme . '://' . $host . ($port !== null && $port !== ($scheme === 'https' ? 443 : 80) ? ':' . $port : ''));
         if ($robots === self::NONE) {
             return null;
         }
@@ -62,33 +64,47 @@ final class RobotsCache
         return Checker::robotsDisallows($robots, $path === '' ? '/' : $path);
     }
 
-    /** `<prefix>robots.<host>`: no PSR-6 reserved character (`{}()/\@:`), host names have none. */
-    public function key(string $host): string
+    /**
+     * `<prefix>robots.<host>` for the https origin on its default port, `<prefix>robots.<scheme>_<host>_<port>` otherwise:
+     * no PSR-6 reserved character (`{}()/\@:`). $origin is a host or a `scheme://host[:port]`.
+     */
+    public function key(string $origin): string
     {
-        return $this->keyPrefix . 'robots.' . $host;
+        if (!str_contains($origin, '://')) {
+            return $this->keyPrefix . 'robots.' . $origin;
+        }
+        $parts = parse_url($origin);
+        $scheme = strtolower((string) ($parts['scheme'] ?? 'https'));
+        $host = strtolower((string) ($parts['host'] ?? ''));
+        $port = $parts['port'] ?? null;
+        if ($scheme === 'https' && $port === null) {
+            return $this->keyPrefix . 'robots.' . $host;
+        }
+
+        return $this->keyPrefix . 'robots.' . $scheme . '_' . $host . ($port === null ? '' : '_' . $port);
     }
 
     private function body(string $host, string $origin): string
     {
-        if (isset($this->bodies[$host])) {
-            return $this->bodies[$host];
+        if (isset($this->bodies[$origin])) {
+            return $this->bodies[$origin];
         }
-        if (isset($this->failed[$host])) {
+        if (isset($this->failed[$origin])) {
             return self::NONE;
         }
-        $cached = $this->cached($host);
+        $cached = $this->cached($origin);
         if ($cached !== null) {
-            return $this->bodies[$host] = $cached;
+            return $this->bodies[$origin] = $cached;
         }
         $body = $this->fetch($host, $origin);
         if ($body === null) {
-            $this->failed[$host] = true;
+            $this->failed[$origin] = true;
 
             return self::NONE;
         }
-        $this->store($host, $body);
+        $this->store($origin, $body);
 
-        return $this->bodies[$host] = $body;
+        return $this->bodies[$origin] = $body;
     }
 
     /** null when robots.txt is unavailable (warned once per host and process). */
@@ -113,13 +129,13 @@ final class RobotsCache
         return null;
     }
 
-    private function cached(string $host): ?string
+    private function cached(string $origin): ?string
     {
         if ($this->cache === null || $this->ttl <= 0) {
             return null;
         }
         try {
-            $value = $this->cache->get($this->key($host));
+            $value = $this->cache->get($this->key($origin));
         } catch (Throwable $e) {
             $this->warnCache($e);
 
@@ -129,13 +145,13 @@ final class RobotsCache
         return \is_string($value) ? $value : null;
     }
 
-    private function store(string $host, string $body): void
+    private function store(string $origin, string $body): void
     {
         if ($this->cache === null || $this->ttl <= 0) {
             return;
         }
         try {
-            $this->cache->set($this->key($host), $body, $this->ttl);
+            $this->cache->set($this->key($origin), $body, $this->ttl);
         } catch (Throwable $e) {
             $this->warnCache($e);
         }

@@ -95,7 +95,13 @@ final class VerifyingSubmitter implements SubmitterInterface
 
         $skipped = [];   // normalized URL => Result
         $extra = [];     // URLs submitted in addition (a canonical, a permanent redirect target)
-        foreach ($toCheck as $url) {
+        $deadline = $this->config->timeBudget > 0 ? $this->clock->now()->getTimestamp() + $this->config->timeBudget : null;
+        foreach ($toCheck as $i => $url) {
+            if ($deadline !== null && $i > 0 && $this->clock->now()->getTimestamp() >= $deadline) {
+                // A queue job has a visibility timeout: past the budget the rest goes unverified rather than to a second worker too.
+                $this->logger->warning(self::LOG . 'verify.time_budget of {budget} s spent after {checked} of {count} URLs; the remaining {left} sent unverified', ['budget' => $this->config->timeBudget, 'checked' => $i, 'count' => \count($toCheck), 'left' => \count($toCheck) - $i]);
+                break;
+            }
             $verdict = $this->verify($url);
             if ($verdict->skip !== null) {
                 $skipped[$url] = $verdict->skip;

@@ -60,7 +60,13 @@ final class RobotsCacheTest extends TestCase
         self::assertSame(self::ROBOTS, $cache->values['app_robots.www.example.com']);
         self::assertSame(600, $cache->ttls['app_robots.www.example.com']);
         self::assertSame('app_robots.www.example.com', $a->key('www.example.com'));
-        self::assertMatchesRegularExpression('/^[^{}()\/\\\\@:]+$/', $a->key('www.example.com'), 'no PSR-6 reserved character');
+        self::assertSame('app_robots.www.example.com', $a->key('https://www.example.com'), 'https on 443 is the plain host key');
+        self::assertSame('app_robots.http_www.example.com_8080', $a->key('http://www.example.com:8080'), 'another origin, another file');
+        self::assertMatchesRegularExpression('/^[^{}()\/\\\\@:]+$/', $a->key('http://www.example.com:8080'), 'no PSR-6 reserved character');
+        $staging = (new FakeTransport())->onGet('http://www.example.com:8080/robots.txt', new Response(200, "User-agent: *\nDisallow: /"));
+        $s = new RobotsCache($staging, $cache, 'app_', 600);
+        self::assertSame('Disallow: /', $s->disallows('http://www.example.com:8080/private/x'), 'staging on another port has its own robots.txt');
+        self::assertSame('Disallow: /private/', $a->disallows('https://www.example.com/private/z'), 'and production keeps its own');
 
         $second = new FakeTransport();
         $b = new RobotsCache($second, $cache, 'app_', 600);

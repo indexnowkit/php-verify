@@ -63,6 +63,9 @@ GET настоящий (не HEAD: многие origin отвечают на HEA
 (`verify.robots_cache_ttl`, час). Недоступный `robots.txt` (не `200` и не `404`) ничего не блокирует: один warning на
 хост, все пути считаются разрешёнными — недоступный `robots.txt` не повод молчать движкам.
 
+**Время.** Один блокирующий GET на URL, последовательно, `verify.time_budget` (60 с) на всю пачку: после него остаток уходит
+без проверки с одним warning, чтобы задание очереди не пережило свой visibility timeout и не досталось второму воркеру.
+
 **Пачки.** Пачка больше `verify.max_batch` (100) URL уходит без проверки с одним warning: это команда `sitemap`, где
 сайт сам перечислил свои URL (`indexnow:sitemap --no-verify` говорит это явно). `submit --dry-run` выполняет
 предпроверку (GET безвреден) и показывает, что было бы отсечено.
@@ -123,7 +126,7 @@ $results = $submitter->submit(['https://www.example.com/blog/post-1']);
 
 ## Требования
 
-PHP 8.2+, `indexnowkit/core ^0.10`; `indexnowkit/console ^0.3` для опций `--sample` команды `check` (есть у каждого
+PHP 8.2+, `indexnowkit/core ^0.11`; `indexnowkit/console ^0.4` для опций `--sample` команды `check` (есть у каждого
 адаптера).
 
 ## Заметки для AI-ассистентов

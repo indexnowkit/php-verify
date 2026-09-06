@@ -20,13 +20,17 @@ final readonly class VerifyConfig
     /** Every key of the block, dotted-path form, for `Config::unknownOptions()`. */
     public const OPTIONS = [
         'verify.enabled', 'verify.redirect', 'verify.non_canonical', 'verify.origin_error', 'verify.delay',
-        'verify.timeout', 'verify.max_redirects', 'verify.max_batch', 'verify.robots_cache_ttl', 'verify.user_agent',
+        'verify.timeout', 'verify.max_redirects', 'verify.max_batch', 'verify.time_budget', 'verify.robots_cache_ttl', 'verify.user_agent',
     ];
 
     public const DEFAULT_TIMEOUT = 5.0;
     public const DEFAULT_MAX_REDIRECTS = 3;
     /** A batch above it is sent unverified with one warning: a sitemap run is the site's own list of its URLs. */
     public const DEFAULT_MAX_BATCH = 100;
+    /** Seconds the pre-flight of one batch may take in total; what is left when it runs out is sent unverified with a warning. */
+    public const DEFAULT_TIME_BUDGET = 60;
+    /** Bytes of a page the pre-flight GET reads at most: the signals live in the head, `PageSignals::MAX_BYTES` of it. */
+    public const BODY_LIMIT = 1_048_576;
     public const DEFAULT_ROBOTS_CACHE_TTL = 3600;
     /** Upper bound of `verify.delay`: a queue worker sleeping longer than this is a queue nobody watches. */
     public const MAX_DELAY = 30;
@@ -44,6 +48,9 @@ final readonly class VerifyConfig
      * @param float              $timeout         seconds one GET may take
      * @param int                $maxRedirects    hops followed with `redirect: follow`; more is a skip
      * @param int                $maxBatch        largest batch verified; a larger one is sent unverified with a warning
+     * @param int                $timeBudget      seconds the pre-flight of one batch may take in total (a queue job has a
+     *                                            visibility timeout); the URLs left when it runs out are sent unverified
+     *                                            with a warning. 0 = no budget
      * @param int                $robotsCacheTtl  seconds a fetched robots.txt is kept in the PSR-16 cache (0 = per process only)
      * @param string|null        $userAgent       `User-Agent` of the pre-flight GETs; null = {@see defaultUserAgent()}
      *
@@ -58,6 +65,7 @@ final readonly class VerifyConfig
         public float $timeout = self::DEFAULT_TIMEOUT,
         public int $maxRedirects = self::DEFAULT_MAX_REDIRECTS,
         public int $maxBatch = self::DEFAULT_MAX_BATCH,
+        public int $timeBudget = self::DEFAULT_TIME_BUDGET,
         public int $robotsCacheTtl = self::DEFAULT_ROBOTS_CACHE_TTL,
         public ?string $userAgent = null,
     ) {
@@ -72,6 +80,9 @@ final readonly class VerifyConfig
         }
         if ($maxBatch < 1) {
             throw new ConfigurationException(\sprintf('"verify.max_batch" must be >= 1, got %d.', $maxBatch));
+        }
+        if ($timeBudget < 0) {
+            throw new ConfigurationException(\sprintf('"verify.time_budget" must be >= 0 seconds, got %d.', $timeBudget));
         }
         if ($robotsCacheTtl < 0) {
             throw new ConfigurationException(\sprintf('"verify.robots_cache_ttl" must be >= 0, got %d.', $robotsCacheTtl));
@@ -100,6 +111,7 @@ final readonly class VerifyConfig
             timeout: self::float($block['timeout'] ?? null, self::DEFAULT_TIMEOUT, 'verify.timeout'),
             maxRedirects: self::int($block['max_redirects'] ?? null, self::DEFAULT_MAX_REDIRECTS, 'verify.max_redirects'),
             maxBatch: self::int($block['max_batch'] ?? null, self::DEFAULT_MAX_BATCH, 'verify.max_batch'),
+            timeBudget: self::int($block['time_budget'] ?? null, self::DEFAULT_TIME_BUDGET, 'verify.time_budget'),
             robotsCacheTtl: self::int($block['robots_cache_ttl'] ?? null, self::DEFAULT_ROBOTS_CACHE_TTL, 'verify.robots_cache_ttl'),
             userAgent: self::str($block['user_agent'] ?? null),
         );
@@ -146,6 +158,7 @@ final readonly class VerifyConfig
             'timeout' => $this->timeout,
             'max_redirects' => $this->maxRedirects,
             'max_batch' => $this->maxBatch,
+            'time_budget' => $this->timeBudget,
             'robots_cache_ttl' => $this->robotsCacheTtl,
             'user_agent' => $this->userAgent,
         ];
