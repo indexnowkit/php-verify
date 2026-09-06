@@ -124,6 +124,13 @@ $results = $submitter->submit(['https://www.example.com/blog/post-1']);
 внутреннему сабмиттеру, — тогда пропущенные результаты дойдут и до них. Строки лога — фиксированные, их grep'ят
 операторы ([docs/operations.md](docs/operations.md)); опции — в [docs/configuration.md](docs/configuration.md).
 
+## Авторам адаптеров
+
+`Verify\Adapter\VerifyServices` — всё, что адаптер фреймворка подключает для этого пакета, в одном месте: предикат (`package()`), свои опции,
+проверенный блок, транспорт pre-flight, кэш robots, декорированные submitter и фабрику командных submitter'ов, строки `check` — статические функции над частями, с двойниками `*For()` поверх
+`Adapter\Services` ядра для рантайм-графа. Symfony-бандл, адаптеры Laravel и Yii2 построены на нём; см.
+[adapters.md](https://github.com/indexnowkit/php-core/blob/main/docs/adapters.md) ядра.
+
 ## Требования
 
 PHP 8.2+, `indexnowkit/core ^0.11`; `indexnowkit/console ^0.4` для опций `--sample` команды `check` (есть у каждого

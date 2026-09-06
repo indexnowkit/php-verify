@@ -3,6 +3,18 @@
 Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Versioning: SemVer; until 1.0 minor versions may
 contain breaking changes, listed under "Changed". What the compatibility promise covers: [docs/bc.md](docs/bc.md).
 
+## [0.3.0] — Unreleased
+
+### Added
+
+- **`Verify\Adapter\VerifyServices`** — what every framework adapter wires for this package, in one place: `package()`,
+  `options()`, `config()`, the pre-flight `transport()`, the `robots()` cache, the decorated `submitter()` and
+  `submitterFactory()`, the `check` lines with their texts (`installedLine()`, `installedCheck()`, `dispatchCheck()`,
+  `transportCheck()`, `sampleCheck()`), and the `*For()` twins over the core's runtime graph (`Adapter\Services`:
+  `transportFor()`, `robotsFor()`, `submitterFor()`, `submitterFactoryFor()`, `checksFor()`). The Symfony bundle, the
+  Laravel and the Yii2 adapters build on it (their copies of the texts and constructions are gone); the next adapter
+  keeps only what its framework decides.
+
 ## [0.2.1] — 2026-09-07
 
 ### Changed

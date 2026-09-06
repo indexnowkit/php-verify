@@ -127,6 +127,13 @@ the skipped ones) exactly once; pass the same PSR-14 dispatcher and submission s
 the skipped results reach them too. The log lines are fixed strings operators can grep
 ([docs/operations.md](docs/operations.md)); the options are in [docs/configuration.md](docs/configuration.md).
 
+## For adapter authors
+
+`Verify\Adapter\VerifyServices` is what a framework adapter wires for this package, in one place: the predicate (`package()`), the owned
+options, the validated block, the pre-flight transport, the robots cache, the decorated submitter and command submitter factory, the `check` lines — as static functions over the pieces, with `*For()` twins over the core's
+`Adapter\Services` for a runtime graph. The Symfony bundle, the Laravel and the Yii2 adapters build on it; see
+[adapters.md](https://github.com/indexnowkit/php-core/blob/main/docs/adapters.md) of the core.
+
 ## Requirements
 
 PHP 8.2+, `indexnowkit/core ^0.11`; `indexnowkit/console ^0.4` for the `--sample` options of the `check` command (every
