@@ -161,7 +161,7 @@ $submitter->submit(['https://www.example.com/page']);    // skipped Results carr
   - robots.txt unavailable (500, timeout) allows everything with one warning; 404 is the normal "no robots.txt".
   - Batches above `verify.max_batch` (100) go unverified with a warning — that is the `sitemap` command; `indexnow:sitemap --no-verify` says it explicitly.
   - `indexnow:check --sample` needs this package; without it the option is an error with the install line.
-  - `dispatch: auto` exists in Symfony and Yii2, **not** in Laravel; locales are `router.locales` (Laravel), `router.languages` (Yii2), `framework.enabled_locales` (Symfony).
+  - `dispatch: auto` exists in Symfony and Yii2, **not** in Laravel; locales are `router.locales` (Laravel, Yii2), `framework.enabled_locales` (Symfony).
 
 ## Versioning
 

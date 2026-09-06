@@ -158,7 +158,7 @@ $submitter->submit(['https://www.example.com/page']);    // пропущенны
   - Недоступный robots.txt (500, таймаут) разрешает всё с одним warning; 404 — нормальное «robots.txt нет».
   - Пачки больше `verify.max_batch` (100) уходят без проверки с warning — это команда `sitemap`; `indexnow:sitemap --no-verify` говорит это явно.
   - `indexnow:check --sample` требует этот пакет; без него опция — ошибка со строкой установки.
-  - `dispatch: auto` есть в Symfony и Yii2, **нет** в Laravel; локали — `router.locales` (Laravel), `router.languages` (Yii2), `framework.enabled_locales` (Symfony).
+  - `dispatch: auto` есть в Symfony и Yii2, **нет** в Laravel; локали — `router.locales` (Laravel, Yii2), `framework.enabled_locales` (Symfony).
 
 ## Версионирование
 
