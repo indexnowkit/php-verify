@@ -1,0 +1,7 @@
+# The test suite at level 6 (the source is level 9 with strict rules, phpstan.neon.dist): a test harness that
+# builds the wrong type fails here instead of at run time. The monorepo CI runs both files per package.
+parameters:
+    level: 6
+    paths:
+        - tests
+    treatPhpDocTypesAsCertain: false

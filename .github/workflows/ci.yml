@@ -28,7 +28,7 @@ jobs:
       - uses: shivammathur/setup-php@v2
         with:
           php-version: ${{ matrix.php }}
-          extensions: mbstring
+          extensions: pdo_sqlite, intl, xmlreader, zlib, mbstring
           coverage: none
       - name: Install (${{ matrix.deps }})
         run: composer run ci:install:${{ matrix.deps }}
