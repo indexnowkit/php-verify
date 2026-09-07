@@ -43,7 +43,7 @@
         "roave/security-advisories": "dev-latest"
     },
     "suggest": {
-        "indexnowkit/console": "The --sample / --sample-class options of the check command of every adapter (^0.4)"
+        "indexnowkit/console": "The --sample / --sample-class options of the check command of every adapter (^0.5)"
     },
     "autoload": {
         "psr-4": {
