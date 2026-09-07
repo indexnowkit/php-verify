@@ -3,6 +3,15 @@
 Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Versioning: SemVer; until 1.0 minor versions may
 contain breaking changes, listed under "Changed". What the compatibility promise covers: [docs/bc.md](docs/bc.md).
 
+## [0.3.1] — Unreleased
+
+### Changed
+
+- `Verify\Adapter\VerifyServices::package()` delegates to the core's `Adapter\OptionalPackage::verify()` (core 0.13.0):
+  the name, the marker and the feature word live there, so an adapter asks about the package without loading this
+  class. Same object, same texts; adapters should call `OptionalPackage::verify()` directly.
+- Requires `indexnowkit/core ^0.13`.
+
 ## [0.3.0] — 2026-09-07
 
 ### Added
