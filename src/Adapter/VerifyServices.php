@@ -21,7 +21,6 @@ use IndexNowKit\Url\UrlNormalizerInterface;
 use IndexNowKit\Verify\Check\DispatchCheck;
 use IndexNowKit\Verify\Check\SampleCheck;
 use IndexNowKit\Verify\Check\TransportCheck;
-use IndexNowKit\Verify\PageSignals;
 use IndexNowKit\Verify\RobotsCache;
 use IndexNowKit\Verify\VerifyConfig;
 use IndexNowKit\Verify\VerifyingSubmitter;
@@ -43,12 +42,13 @@ use Psr\SimpleCache\CacheInterface;
 final class VerifyServices
 {
     /**
-     * The one predicate for `indexnowkit/verify` (safe to call without the package: `::class` on an absent class is
-     * a string); null = detect, false = wire as if the package were absent (tests).
+     * The one predicate for `indexnowkit/verify`: `OptionalPackage::verify()` of the core, which an adapter calls
+     * directly — this class lives in the package and cannot be loaded to say "not installed". null = detect, false =
+     * wire as if the package were absent (tests).
      */
     public static function package(?bool $installed = null): OptionalPackage
     {
-        return new OptionalPackage('indexnowkit/verify', PageSignals::class, 'verify', $installed);
+        return OptionalPackage::verify($installed);
     }
 
     /**
