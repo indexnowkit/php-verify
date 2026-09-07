@@ -8,6 +8,7 @@ use IndexNowKit\Adapter\ServicesBuilder;
 use IndexNowKit\Adapter\SubmitterFactoryInterface;
 use IndexNowKit\Check\CheckReport;
 use IndexNowKit\Check\StaticCheck;
+use IndexNowKit\Http\TransportInterface;
 use IndexNowKit\Testing\ArrayLogger;
 use IndexNowKit\Testing\FakeTransport;
 use IndexNowKit\Verify\Adapter\VerifyServices;
@@ -20,8 +21,10 @@ use IndexNowKit\Verify\Tests\Support\Factory;
 use IndexNowKit\Verify\VerifyConfig;
 use IndexNowKit\Verify\VerifyingSubmitter;
 use IndexNowKit\Verify\VerifyingSubmitterFactory;
+use LogicException;
 use PHPUnit\Framework\Attributes\TestDox;
 use PHPUnit\Framework\TestCase;
+use Throwable;
 
 /** `Verify\Adapter\VerifyServices`: what every framework adapter wires, in one place. */
 final class AdapterServicesTest extends TestCase
@@ -78,5 +81,35 @@ final class AdapterServicesTest extends TestCase
         self::assertTrue($report->hasWarnings(), 'dispatch: sync with the pre-flight on is a warning');
         self::assertStringContainsString('queue', $report->items()[1]->message, 'the framework word for the asynchronous dispatch');
         self::assertCount(3, VerifyServices::checksFor($verify, $services, 'messenger'), 'no sample check when the adapter has none');
+    }
+
+    #[TestDox('the pre-flight transport never uses the application http.client: transportConfig() drops it and transport() ignores the locator')]
+    public function testPreFlightTransportIgnoresTheApplicationClient(): void
+    {
+        $config = Factory::config(['http' => ['client' => 'app.http_client', 'timeout' => 30]]);
+        self::assertSame('app.http_client', $config->httpClient, 'the submissions still go through it');
+        $verify = VerifyConfig::fromArray(['enabled' => true, 'timeout' => 3]);
+
+        $preFlight = $verify->transportConfig($config);
+        self::assertNull($preFlight->httpClient, 'a PSR-18 client cannot be told not to follow redirects, so the pre-flight builds its own');
+        self::assertSame(3.0, $preFlight->httpTimeout, 'verify.timeout still applies');
+
+        // Without the fix this throws: TransportFactory refuses an http.client it has no locator for.
+        $transport = VerifyServices::transport($verify, $config);
+        self::assertInstanceOf(TransportInterface::class, $transport);
+
+        $resolved = [];
+        $withLocator = VerifyServices::transport($verify, $config, static function (string $id) use (&$resolved): never {
+            $resolved[] = $id;
+
+            throw new LogicException('the pre-flight must not resolve ' . $id);
+        });
+
+        try {
+            $withLocator->get('https://www.example.com/robots.txt');
+        } catch (Throwable) {
+            // No PSR-18 client to discover here, and no network: what this asserts is who was asked for one.
+        }
+        self::assertSame([], $resolved, 'the locator is never asked, not even when the lazy transport is finally built');
     }
 }

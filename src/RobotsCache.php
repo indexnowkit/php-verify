@@ -66,22 +66,30 @@ final class RobotsCache
 
     /**
      * `<prefix>robots.<host>` for the https origin on its default port, `<prefix>robots.<scheme>_<host>_<port>` otherwise:
-     * no PSR-6 reserved character (`{}()/\@:`). $origin is a host or a `scheme://host[:port]`.
+     * no PSR-6 reserved character (`{}()/\@:`). $origin is a host or a `scheme://host[:port]`. An IPv6 literal keeps
+     * its brackets and colons from `parse_url()`, so it goes through the same stripping the core's `ForbiddenCounter`
+     * does (`[::1]` becomes `__1`).
      */
     public function key(string $origin): string
     {
         if (!str_contains($origin, '://')) {
-            return $this->keyPrefix . 'robots.' . $origin;
+            return $this->keyPrefix . 'robots.' . self::hostKey($origin);
         }
         $parts = parse_url($origin);
         $scheme = strtolower((string) ($parts['scheme'] ?? 'https'));
-        $host = strtolower((string) ($parts['host'] ?? ''));
+        $host = self::hostKey(strtolower((string) ($parts['host'] ?? '')));
         $port = $parts['port'] ?? null;
         if ($scheme === 'https' && $port === null) {
             return $this->keyPrefix . 'robots.' . $host;
         }
 
         return $this->keyPrefix . 'robots.' . $scheme . '_' . $host . ($port === null ? '' : '_' . $port);
+    }
+
+    /** A host as a PSR-16 key segment: an IPv6 literal loses its brackets, its colons become underscores. */
+    private static function hostKey(string $host): string
+    {
+        return strtr($host, ['[' => '', ']' => '', ':' => '_']);
     }
 
     private function body(string $host, string $origin): string

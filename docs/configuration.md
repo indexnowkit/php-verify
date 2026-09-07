@@ -19,11 +19,13 @@ core typo. In plain PHP: `VerifyConfig::fromArray($block)`.
 | `verify.robots_cache_ttl` | `3600` | Seconds a fetched `robots.txt` is kept in the PSR-16 cache behind `debounce.store` under `<debounce.key_prefix>robots.<host>` (`robots.<scheme>_<host>_<port>` for anything but https on 443: staging on another origin has its own file); `0` = per process only. |
 | `verify.user_agent` | `indexnowkit-verify/<version> (+https://github.com/indexnowkit/php)` | `User-Agent` of the pre-flight GETs. Allow it in your WAF, or it will see 403s. |
 
-The pre-flight transport is the application's `http.client` when one is configured, else the discovered PSR-18 client
-built without redirects and with a 1 MiB body limit (the signals live in the first 256 KiB). **A client the application
-hands over keeps its own settings**: one that follows redirects internally makes `verify.redirect`, `verify.max_redirects`
-and the host check on redirect targets silent, and `verify.timeout` does not apply — `check` says so (`verify.transport`).
-`verify.timeout` replaces `http.timeout` for the discovered client
+**The pre-flight always uses its own PSR-18 client**, discovered by the core, with `max_redirects: 0` and a 1 MiB body
+limit (the signals live in the first 256 KiB). It does **not** use the application's `http.client`, even when one is
+configured: the pre-flight has to see the 3xx answers itself — `verify.redirect`, `verify.max_redirects` and the host
+check on redirect targets all read them — and PSR-18 has no way to tell a client someone else built not to follow
+redirects. `http.client` still carries the POST submissions of the inner submitter, so a corporate proxy or an
+instrumented client keeps applying where it matters; `check` prints which client does what (`verify.transport`).
+`verify.timeout` replaces `http.timeout` for that client
 (`VerifyConfig::transportConfig(Config $core)`). Every other core option (`hosts`, `base_url`, `normalizer.*`,
 `strict_hosts`) applies as it does to the submission: the pre-flight verifies the normalized URL, and a canonical or
 a redirect target is "one of your hosts" when the key provider has a key for it.

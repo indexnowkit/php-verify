@@ -118,6 +118,12 @@ final class PageSignalsTest extends TestCase
         yield 'Link header without canonical' => ['<head></head>', ['Link' => '</next>; rel="next"'], null];
         yield 'header before the link tag' => ['<head><link rel="canonical" href="/tag"></head>', ['Link' => '</header>; rel="canonical"'], 'https://www.example.com/header'];
         yield 'canonical in a comment' => ['<head><!-- <link rel="canonical" href="/old"> --></head>', [], null];
+        yield 'base href, relative canonical' => ['<head><base href="/en/"><link rel="canonical" href="page"></head>', [], 'https://www.example.com/en/page'];
+        yield 'absolute base href' => ['<head><base href="https://cdn.example.com/x/"><link rel="canonical" href="p"></head>', [], 'https://cdn.example.com/x/p'];
+        yield 'base href after the link tag still applies' => ['<head><link rel="canonical" href="page"><base href="/en/"></head>', [], 'https://www.example.com/en/page'];
+        yield 'base href leaves an absolute canonical alone' => ['<head><base href="https://cdn.example.com/"><link rel="canonical" href="https://www.example.com/abs"></head>', [], 'https://www.example.com/abs'];
+        yield 'base without href' => ['<head><base target="_blank"><link rel="canonical" href="rel"></head>', [], 'https://www.example.com/blog/rel'];
+        yield 'base href does not apply to the Link header' => ['<head><base href="/en/"></head>', ['Link' => '<hdr>; rel="canonical"'], 'https://www.example.com/blog/hdr'];
     }
 
     /**

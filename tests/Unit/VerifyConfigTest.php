@@ -105,14 +105,15 @@ final class VerifyConfigTest extends TestCase
         self::assertTrue(VerifyConfig::loadOrDisabled(['enabled' => true], $logger, 'x')->enabled);
     }
 
-    #[TestDox('transportConfig(): the core configuration with http.timeout = verify.timeout, everything else as is')]
+    #[TestDox('transportConfig(): the core configuration with http.timeout = verify.timeout and http.client dropped, everything else as is')]
     public function testTransportConfig(): void
     {
         $core = Config::fromArray(['key' => 'abcdef1234567890abcdef1234567890', 'base_url' => 'https://www.example.com', 'http' => ['timeout' => 10, 'client' => 'app.client']]);
         $transport = VerifyConfig::fromArray(['timeout' => 2])->transportConfig($core);
 
         self::assertSame(2.0, $transport->httpTimeout);
-        self::assertSame('app.client', $transport->httpClient);
+        self::assertNull($transport->httpClient, 'the pre-flight must see the 3xx itself, so it never uses a client that may follow them');
+        self::assertSame('app.client', $core->httpClient, 'the submissions keep going through it');
         self::assertSame($core->key, $transport->key);
     }
 }

@@ -58,7 +58,14 @@ indexnowkit:                                         # Yii2: 'verify' => [...] o
 The GET is a real GET (not HEAD: many origins answer HEAD differently), without following redirects, with
 `verify.timeout` (5 s) and its own `User-Agent` (`verify.user_agent`). Only the `<head>` of the first 256 KiB is read
 for the signals; a body that is not `text/html` / `application/xhtml+xml` contributes headers only. Comments,
-attribute order and case do not matter.
+attribute order and case do not matter; a relative `<link rel="canonical">` resolves against the document's
+`<base href>` when it declares one, as a crawler resolves it.
+
+The pre-flight uses its **own** PSR-18 client, discovered by the core with `max_redirects: 0` — not the application's
+`http.client`, even when one is configured. It has to see the 3xx answers itself (`verify.redirect`,
+`verify.max_redirects`, the host check on redirect targets), and PSR-18 cannot tell a client someone else built to
+stop following redirects. `http.client` keeps carrying the POST submissions; `check` prints the split
+(`verify.transport`).
 
 `robots.txt` is fetched once per host and process and kept in the PSR-16 cache behind `debounce.store`
 (`verify.robots_cache_ttl`, an hour). A `robots.txt` that cannot be fetched (not `200`, not `404`) blocks nothing: one

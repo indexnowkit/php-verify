@@ -73,17 +73,20 @@ final class VerifyServices
     }
 
     /**
-     * The pre-flight transport: `verify.timeout`, `verify.user_agent` and the body limit over the application's
-     * `http.client` (looked up through $clientLocator when it names a service).
+     * The pre-flight transport: `verify.timeout`, `verify.user_agent` and the body limit over the PSR-18 client the
+     * core discovers, with `max_redirects: 0`. The application's `http.client` is **not** used here and $clientLocator
+     * is ignored (kept so the adapters keep compiling): the pre-flight must see the 3xx answers itself, and a client
+     * the application configured may follow them silently ({@see VerifyConfig::transportConfig()}). `http.client`
+     * still carries the POST submissions of the inner submitter.
      *
-     * @param (Closure(string): mixed)|null $clientLocator
+     * @param (Closure(string): mixed)|null $clientLocator ignored
      */
     public static function transport(VerifyConfig $verify, Config $config, ?Closure $clientLocator = null): TransportInterface
     {
-        return TransportFactory::lazy($verify->transportConfig($config), $clientLocator, ['User-Agent' => $verify->userAgent()], VerifyConfig::BODY_LIMIT);
+        return TransportFactory::lazy($verify->transportConfig($config), null, ['User-Agent' => $verify->userAgent()], VerifyConfig::BODY_LIMIT);
     }
 
-    /** @param (Closure(string): mixed)|null $clientLocator */
+    /** @param (Closure(string): mixed)|null $clientLocator ignored ({@see transport()}) */
     public static function transportFor(VerifyConfig $verify, Services $services, ?Closure $clientLocator = null): TransportInterface
     {
         return self::transport($verify, $services->config, $clientLocator);

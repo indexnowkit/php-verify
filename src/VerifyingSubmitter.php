@@ -89,13 +89,15 @@ final class VerifyingSubmitter implements SubmitterInterface
             return $this->finish($this->inner->submit($urls), []);
         }
         $toCheck = array_values(array_filter($planned, fn(string $url): bool => $this->hasKey($url)));
+        // The deadline is taken before the delay, not after: verify.time_budget exists to fit a queue job's visibility
+        // timeout, and delay + budget would otherwise overrun it by verify.delay seconds.
+        $deadline = $this->config->timeBudget > 0 ? $this->clock->now()->getTimestamp() + $this->config->timeBudget : null;
         if ($toCheck !== [] && $this->config->delay > 0 && !$this->inWebRequest) {
             ($this->sleep)($this->config->delay);
         }
 
         $skipped = [];   // normalized URL => Result
         $extra = [];     // URLs submitted in addition (a canonical, a permanent redirect target)
-        $deadline = $this->config->timeBudget > 0 ? $this->clock->now()->getTimestamp() + $this->config->timeBudget : null;
         foreach ($toCheck as $i => $url) {
             if ($deadline !== null && $i > 0 && $this->clock->now()->getTimestamp() >= $deadline) {
                 // A queue job has a visibility timeout: past the budget the rest goes unverified rather than to a second worker too.

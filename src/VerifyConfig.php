@@ -184,13 +184,16 @@ final readonly class VerifyConfig
     }
 
     /**
-     * The core configuration the pre-flight transport is built from: the application's `http.client` and every other
-     * option as they are, `http.timeout` = `verify.timeout`. The `User-Agent` goes as an extra header
-     * (`TransportFactory::lazy($config->transportConfig($core), $locator, ['User-Agent' => $config->userAgent()])`).
+     * The core configuration the pre-flight transport is built from: every option as it is, `http.timeout` =
+     * `verify.timeout`, and **`http.client` dropped**. The pre-flight has to see the 3xx answers itself — the host
+     * check on a redirect, `verify.max_redirects` and the loop detection all read them — and PSR-18 has no way to
+     * tell a client the application handed over not to follow redirects, so the pre-flight always uses the client the
+     * core discovers with `max_redirects: 0`. `http.client` still carries the POST submissions. The `User-Agent` goes
+     * as an extra header (`TransportFactory::lazy($config->transportConfig($core), null, ['User-Agent' => $config->userAgent()])`).
      */
     public function transportConfig(Config $core): Config
     {
-        return $core->with(httpTimeout: $this->timeout);
+        return $core->with(httpTimeout: $this->timeout, httpClient: null);
     }
 
     /**

@@ -43,7 +43,8 @@ final readonly class PageSignals
     ) {}
 
     /**
-     * @param string $url the URL that was fetched (relative `href` and `Location` values resolve against it)
+     * @param string $url the URL that was fetched: the `Location` and a `Link:` header resolve against it, a relative
+     *                    `href` in the document against its `<base href>` when it has one ({@see baseHref()})
      */
     public static function fromResponse(string $url, Response $response): self
     {
@@ -58,7 +59,7 @@ final readonly class PageSignals
             if (!$noindex) {
                 [$noindex, $source] = self::metaNoindex($head);
             }
-            $canonical ??= self::linkCanonical($url, $head);
+            $canonical ??= self::linkCanonical(self::baseHref($url, $head), $head);
         }
 
         return new self(
@@ -151,6 +152,22 @@ final readonly class PageSignals
         }
 
         return [false, null];
+    }
+
+    /**
+     * What a relative `href` of the document resolves against: the first `<base href>` of the head (itself resolved
+     * against the page URL, as HTML requires), or the page URL when there is none. A page with `<base href="/en/">`
+     * and `<link rel="canonical" href="page">` is canonical at `/en/page`, and the pre-flight must read the same URL
+     * the crawler does — otherwise it drops the page as non-canonical.
+     */
+    private static function baseHref(string $url, string $head): string
+    {
+        if (preg_match('/<base\b[^>]*>/i', $head, $tag) !== 1) {
+            return $url;
+        }
+        $href = self::attributes($tag[0])['href'] ?? '';
+
+        return ($href === '' ? null : UrlReference::resolve($url, html_entity_decode($href, ENT_QUOTES | ENT_HTML5))) ?? $url;
     }
 
     private static function linkCanonical(string $url, string $head): ?string

@@ -51,6 +51,7 @@ class ArrayCache implements CacheInterface
         return $out;
     }
 
+    /** @param iterable<string, mixed> $values */
     public function setMultiple($values, $ttl = null): bool
     {
         foreach ($values as $key => $value) {

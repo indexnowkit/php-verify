@@ -48,8 +48,10 @@ final class VerifyingSubmitterTest extends TestCase
     {
         $out = [];
         foreach ($results as $result) {
+            $reason = $result->reason;
+            $reasonLabel = $reason === null ? '-' : $reason->value;
             foreach ($result->urls as $url) {
-                $out[] = $result->status->value . ':' . ($result->reason?->value ?? '-') . ':' . $url;
+                $out[] = $result->status->value . ':' . $reasonLabel . ':' . $url;
             }
         }
         sort($out);
@@ -294,6 +296,29 @@ final class VerifyingSubmitterTest extends TestCase
         self::assertCount(2, array_filter($transport->gets, static fn(string $u): bool => !str_ends_with($u, '/robots.txt')), 'A and B are fetched (80 s), C is past the budget');
         self::assertCount(3, self::posted($transport), 'every URL is submitted');
         self::assertSame(['indexnow verify: verify.time_budget of 60 s spent after 2 of 3 URLs; the remaining 1 sent unverified'], $logger->messages('warning'));
+    }
+
+    #[TestDox('verify.time_budget is taken before verify.delay waits: the delay is spent inside the budget, not added to it')]
+    public function testTimeBudgetCoversTheDelay(): void
+    {
+        $transport = Factory::transport();
+        $clock = new FrozenClock();
+        $transport->beforeGet = static function (string $url) use ($clock): void {
+            if (!str_ends_with($url, '/robots.txt')) {
+                $clock->advance(10);
+            }
+        };
+        $logger = new ArrayLogger();
+        $sleep = static function (int $seconds) use ($clock): void {
+            $clock->advance($seconds);
+        };
+        [$submitter] = Factory::submitters($transport, ['delay' => 25, 'time_budget' => 30], logger: $logger, clock: $clock, sleep: $sleep);
+
+        $submitter->submit([self::A, self::B, 'https://www.example.com/c']);
+
+        self::assertCount(1, array_filter($transport->gets, static fn(string $u): bool => !str_ends_with($u, '/robots.txt')), 'the 25 s delay leaves 5 s of the budget: only A is verified');
+        self::assertCount(3, self::posted($transport), 'every URL is still submitted');
+        self::assertSame(['indexnow verify: verify.time_budget of 30 s spent after 1 of 3 URLs; the remaining 2 sent unverified'], $logger->messages('warning'), 'a worker that allowed 30 s never spends 55');
     }
 
     #[TestDox('enabled: false is a transparent delegate: zero GETs, the listeners still see every result')]

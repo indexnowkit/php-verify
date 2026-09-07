@@ -13,7 +13,7 @@ use PHPUnit\Framework\TestCase;
 
 final class ChecksTest extends TestCase
 {
-    #[TestDox('DispatchCheck warns with dispatch: sync naming the adapter\'s queue mode; TransportCheck warns about an application http.client')]
+    #[TestDox('DispatchCheck warns with dispatch: sync naming the adapter\'s queue mode; TransportCheck says the pre-flight does not use the application http.client')]
     public function testChecks(): void
     {
         self::assertSame([], self::lines(new DispatchCheck(false, 'queue')));
@@ -22,7 +22,8 @@ final class ChecksTest extends TestCase
         self::assertSame([], self::lines(new TransportCheck(false, 'app.http_client')));
         $lines = self::lines(new TransportCheck(true, 'app.http_client'));
         self::assertCount(1, $lines);
-        self::assertStringStartsWith('warning verify.transport verify: the pre-flight uses http.client "app.http_client"', $lines[0]);
+        self::assertStringStartsWith('ok verify.transport verify: the pre-flight uses its own PSR-18 client', $lines[0], 'no warning any more: the pre-flight never uses http.client, so it cannot follow redirects behind our back');
+        self::assertStringContainsString('not http.client "app.http_client"', $lines[0]);
     }
 
     /**

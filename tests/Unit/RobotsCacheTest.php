@@ -63,6 +63,12 @@ final class RobotsCacheTest extends TestCase
         self::assertSame('app_robots.www.example.com', $a->key('https://www.example.com'), 'https on 443 is the plain host key');
         self::assertSame('app_robots.http_www.example.com_8080', $a->key('http://www.example.com:8080'), 'another origin, another file');
         self::assertMatchesRegularExpression('/^[^{}()\/\\\\@:]+$/', $a->key('http://www.example.com:8080'), 'no PSR-6 reserved character');
+        self::assertSame('app_robots.__1', $a->key('https://[::1]'), 'an IPv6 literal loses its brackets and colons, as the core ForbiddenCounter does');
+        self::assertSame('app_robots.http___1_8080', $a->key('http://[::1]:8080'));
+        self::assertSame('app_robots.__1', $a->key('[::1]'), 'and the same for a bare host');
+        foreach (['https://[::1]', 'http://[::1]:8080', '[::1]', 'https://[2001:db8::ff00:42:8329]/'] as $origin) {
+            self::assertMatchesRegularExpression('/^[^{}()\/\\\\@:]+$/', $a->key($origin), $origin . ': no PSR-6 reserved character');
+        }
         $staging = (new FakeTransport())->onGet('http://www.example.com:8080/robots.txt', new Response(200, "User-agent: *\nDisallow: /"));
         $s = new RobotsCache($staging, $cache, 'app_', 600);
         self::assertSame('Disallow: /', $s->disallows('http://www.example.com:8080/private/x'), 'staging on another port has its own robots.txt');

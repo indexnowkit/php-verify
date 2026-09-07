@@ -9,8 +9,10 @@ use IndexNowKit\Check\CheckReport;
 
 /**
  * The pre-flight relies on seeing 3xx answers itself: the redirect target is checked against the configured hosts,
- * `verify.max_redirects` counts the hops, `verify.timeout` bounds the GET. A client the application hands over as
- * `http.client` keeps its own settings — one that follows redirects internally makes all three silent. One warning.
+ * `verify.max_redirects` counts the hops, `verify.timeout` bounds the GET. PSR-18 has no way to tell a client the
+ * application handed over as `http.client` not to follow redirects, so the pre-flight does not use it: it builds its
+ * own client with `max_redirects: 0` ({@see VerifyConfig::transportConfig()}), while `http.client` keeps carrying the
+ * POST submissions. One line saying which client does what, so a split transport is never a surprise in a bug report.
  */
 final class TransportCheck implements CheckInterface
 {
@@ -25,7 +27,7 @@ final class TransportCheck implements CheckInterface
     public function check(CheckReport $report): void
     {
         if ($this->enabled && $this->client !== null) {
-            $report->warning(\sprintf('verify: the pre-flight uses http.client "%s" as configured by the application; make sure it does not follow redirects and has a timeout, or verify.max_redirects, verify.timeout and the host check on redirects do not apply', $this->client), self::CODE);
+            $report->ok(\sprintf('verify: the pre-flight uses its own PSR-18 client with verify.timeout and no redirects, not http.client "%s"; that client sends the submissions', $this->client), self::CODE);
         }
     }
 }
