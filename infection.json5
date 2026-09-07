@@ -1,0 +1,20 @@
+{
+    // Mutation testing of this package (audit 0.13 T20): bin/mutation verify locally, the `mutation` job of the monorepo CI.
+    // Infection lives in tools/infection of the monorepo (it needs PHP 8.3, the package supports 8.2); the floor is
+    // tests/msi-floor.txt. Log texts and exception messages are not API (docs/bc.md), so the mutants that only reword
+    // them are ignored by regex instead of by annotations in the code.
+    "$schema": "../../tools/infection/vendor/infection/infection/resources/schema.json",
+    "source": {"directories": ["src"]},
+    "timeout": 20,
+    "tmpDir": "../../var/mutation/tmp",
+    "logs": {
+        "text": "../../var/mutation/verify.log",
+        "summary": "../../var/mutation/verify.summary.txt",
+        "json": "../../var/mutation/verify.json"
+    },
+    "mutators": {
+        "@default": true,
+        "Concat": {"ignoreSourceCodeByRegex": [".*->(debug|info|notice|warning|error|critical|log)\\(.*", ".*Exception\\(.*"]},
+        "ConcatOperandRemoval": {"ignoreSourceCodeByRegex": [".*->(debug|info|notice|warning|error|critical|log)\\(.*", ".*Exception\\(.*"]}
+    }
+}
