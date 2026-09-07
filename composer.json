@@ -39,7 +39,7 @@
         "phpstan/phpstan": "^2.2.13",
         "phpstan/phpstan-phpunit": "^2.0.18",
         "phpstan/phpstan-strict-rules": "^2.0.12",
-        "phpunit/phpunit": "^11.5",
+        "phpunit/phpunit": "^11.5 || ^12.0 || ^13.0",
         "roave/security-advisories": "dev-latest"
     },
     "suggest": {
@@ -69,7 +69,7 @@
     },
     "extra": {
         "branch-alias": {
-            "dev-main": "0.3.x-dev"
+            "dev-main": "0.4.x-dev"
         }
     }
 }

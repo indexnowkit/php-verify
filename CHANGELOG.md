@@ -3,14 +3,32 @@
 Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Versioning: SemVer; until 1.0 minor versions may
 contain breaking changes, listed under "Changed". What the compatibility promise covers: [docs/bc.md](docs/bc.md).
 
-## [0.3.1] — Unreleased
+## [0.4.0] — Unreleased
 
 ### Changed
 
+- **The pre-flight no longer uses the application's `http.client`.** `VerifyConfig::transportConfig()` drops it, and
+  `Adapter\VerifyServices::transport()` ignores the client locator: the pre-flight always builds the PSR-18 client the
+  core discovers, with `max_redirects: 0` and `verify.timeout`. PSR-18 has no way to tell a client the application
+  handed over not to follow redirects, so such a client saw the final 200 and silently disabled `verify.redirect`,
+  `verify.max_redirects`, the host check on redirect targets and the loop detection. `http.client` still carries the
+  POST submissions of the inner submitter, so a proxy or an instrumented client keeps applying there. The
+  `verify.transport` line of `check` is no longer a warning: it says which client does what.
 - `Verify\Adapter\VerifyServices::package()` delegates to the core's `Adapter\OptionalPackage::verify()` (core 0.13.0):
   the name, the marker and the feature word live there, so an adapter asks about the package without loading this
   class. Same object, same texts; adapters should call `OptionalPackage::verify()` directly.
 - Requires `indexnowkit/core ^0.13`.
+
+### Fixed
+
+- **A relative `<link rel="canonical">` resolves against the document's `<base href>`** when it declares one (the
+  `<base>` itself against the page URL), as a crawler resolves it. A page with a `<base>` had its canonical computed
+  against the fetched URL instead, did not match, and was dropped as non-canonical — a refusal in the closed direction.
+- **`verify.time_budget` is taken before `verify.delay` waits**, so delay plus budget can no longer overrun the
+  visibility timeout of the queue job the budget exists to fit.
+- `RobotsCache::key()` strips `[`, `]` and `:` of an IPv6 host, as the core's `Retry\ForbiddenCounter` does: the cache
+  key of `https://[::1]` carried PSR-16 reserved characters and a strict store rejected it (the class degraded to one
+  fetch per process with a warning).
 
 ## [0.3.0] — 2026-09-07
 
