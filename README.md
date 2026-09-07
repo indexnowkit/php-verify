@@ -29,7 +29,7 @@ the engine decides whether and when to crawl.
 composer require indexnowkit/verify         # brings indexnowkit/core; nothing else
 ```
 
-With a framework adapter (`indexnowkit/symfony-bundle`, `laravel`, `yii2`) that is all: the adapter finds the package,
+With a framework adapter (`indexnowkit/symfony-bundle`, `laravel`, `yii2`, `yii3`) that is all: the adapter finds the package,
 adds the `verify` block to its configuration and, once `verify.enabled` is `true`, decorates its submitter — the
 queue, Messenger and yii2-queue workers verify too, because they get the same submitter. `check` prints one line
 about it either way (`verify: installed, disabled (verify.enabled: false)`).
@@ -131,7 +131,7 @@ the skipped results reach them too. The log lines are fixed strings operators ca
 
 `Verify\Adapter\VerifyServices` is what a framework adapter wires for this package, in one place: the predicate (`package()`), the owned
 options, the validated block, the pre-flight transport, the robots cache, the decorated submitter and command submitter factory, the `check` lines — as static functions over the pieces, with `*For()` twins over the core's
-`Adapter\Services` for a runtime graph. The Symfony bundle, the Laravel and the Yii2 adapters build on it; see
+`Adapter\Services` for a runtime graph. The Symfony bundle, the Laravel, the Yii2 and the Yii3 adapters build on it; see
 [adapters.md](https://github.com/indexnowkit/php-core/blob/main/docs/adapters.md) of the core.
 
 ## Requirements
@@ -168,7 +168,7 @@ $submitter->submit(['https://www.example.com/page']);    // skipped Results carr
   - robots.txt unavailable (500, timeout) allows everything with one warning; 404 is the normal "no robots.txt".
   - Batches above `verify.max_batch` (100) go unverified with a warning — that is the `sitemap` command; `indexnow:sitemap --no-verify` says it explicitly.
   - `indexnow:check --sample` needs this package; without it the option is an error with the install line.
-  - `dispatch: auto` exists in Symfony and Yii2, **not** in Laravel; locales are `router.locales` (Laravel, Yii2), `framework.enabled_locales` (Symfony).
+  - `dispatch: auto` exists in Symfony and Yii2, **not** in Laravel (Yii3: `sync` | `none`); locales are `router.locales` (Laravel, Yii2, Yii3), `framework.enabled_locales` (Symfony).
 
 ## Versioning
 
